@@ -46,7 +46,7 @@ type Transcripter interface {
 	RegisterFragment(length uint32, start uint32, end uint32)
 	SampleFragment(length uint32, rand Rander) Fragment
 	Flatten()
-	Fragment(tg Targeter, fg Fragmentor, polyAparam *TargetMix, polyAmax int, st FragStater, rand Rander)
+	Fragment(tg Targeter, fg Fragmentor, polyAparam *TargetMix, polyAmax int, st FragStater, rand Rander, primingRejects bool)
 	Pcr(p Pooler, tc Thermocycler, st FragStater, rand Rander)
 	GetFragStructs() *map[uint32]StartEndCountStruct
 	String() string
@@ -136,10 +136,17 @@ func (tr Transcript) GetExprLevel() uint64 {
 	return tr.exprLevel
 }
 
-func (tr Transcript) Fragment(tg Targeter, fg Fragmentor, polyAParam *TargetMix, polyAmax int, st FragStater, rand Rander) {
+func (tr Transcript) Fragment(tg Targeter, fg Fragmentor, polyAParam *TargetMix, polyAmax int, st FragStater, rand Rander, primingRejects bool) {
 	level := tr.GetExprLevel()
 	// Calculate binding profile:
 	bindProfs := fg.GetBindingProfiles(tr)
+
+	// adjust level to account for overall transcript priming affinity
+	if bindProfs != nil && primingRejects {
+		rate := bindProfs.GetPrimingRate()
+		level = uint64(float64(level)*rate + 0.5)
+	}
+
 	var i uint64
 	for ; i < level; i++ {
 		// Simulate poly-A tail:

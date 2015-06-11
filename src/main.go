@@ -137,7 +137,7 @@ func main() {
 	// We still need the old global generator wehen simulating fragmentation.
 
 	// Initialize Transcripts
-	pool.InitTranscripts(input, target, fragmentor, cycler, stats, args.GCFreq, args.PolyAParam, args.ExprMul, Rg, pcrRand)
+	pool.InitTranscripts(input, target, fragmentor, cycler, stats, args.GCFreq, args.PolyAParam, args.ExprMul, Rg, pcrRand, args.PrimingRejects)
 
 	// Deal with sampling seed:
 	if args.SamplingSeed != 0 {

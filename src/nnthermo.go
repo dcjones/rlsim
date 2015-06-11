@@ -56,8 +56,23 @@ type NNthermo struct {
 type BindingProfile []float64
 
 type BindingProfiles struct {
-	Forward BindingProfile
-	Reverse BindingProfile
+	Forward     BindingProfile
+	Reverse     BindingProfile
+	aveAffinity float64
+}
+
+func (profiles BindingProfiles) GetPrimingRate() float64 {
+	ave := 0.0
+	for i := range profiles.Forward {
+		ave += profiles.Forward[i]
+	}
+
+	for i := range profiles.Reverse {
+		ave += profiles.Reverse[i]
+	}
+
+	ave /= float64(len(profiles.Forward) + len(profiles.Reverse))
+	return ave / profiles.aveAffinity
 }
 
 func NewNNthermo(primingTemp float64, kmerLength uint32) *NNthermo {
@@ -123,6 +138,26 @@ func NewNNthermo(primingTemp float64, kmerLength uint32) *NNthermo {
 	return nn
 }
 
+func (nn NNthermo) GetAveKmerAffinity() float64 {
+	// Crudely approximate average k-mer binding affinity
+	dHMean := 0.0
+	for _, value := range nn.nn_dH {
+		dHMean += value
+	}
+	dHMean /= float64(len(nn.nn_dH))
+
+	dSMean := 0.0
+	for _, value := range nn.nn_dS {
+		dSMean += value
+	}
+	dSMean /= float64(len(nn.nn_dS))
+
+	dH := float64(nn.kmerLength-1)*dHMean + nn.initiation_H
+	dS := float64(nn.kmerLength-1)*dSMean + nn.initiation_S
+	e := dH - (nn.T*dS)/1000.0
+	return math.Exp(-e / (1.9872 * nn.T))
+}
+
 func (nn NNthermo) KmerAffinity(kmer string) float64 {
 	// Check in k-mer cache:
 	ce, ok := (*nn.kmerCache)[kmer]
@@ -180,6 +215,7 @@ func (nn NNthermo) GetBindingProfiles(tr Transcripter, rev bool) *BindingProfile
 	if rev {
 		bp.Reverse = nn.GetBindingProfile(tr, true)
 	}
+	bp.aveAffinity = nn.GetAveKmerAffinity()
 	return bp
 }
 

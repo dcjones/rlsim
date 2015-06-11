@@ -50,33 +50,34 @@ type EffParam struct {
 
 // Struct to hold command line arguments:
 type CmdArgs struct {
-	ReqFrags      int64
-	NrCycles      int64
-	StrandBias    float64
-	PrimingTemp   float64
-	FixedEff      float64
-	GcEffParam    *EffParam
-	LenEffParam   *EffParam
-	ReportFile    string
-	Verbose       bool
-	TargetMix     *TargetMix
-	FragMethod    *FragMethod
-	FragLossProb  float64
-	InputFiles    []string
-	MaxProcs      int64
-	ProfFile      string
-	KmerLength    uint32
-	GobDir        string
-	GCFreq        int
-	PolyAParam    *TargetMix
-	InitSeed      int64
-	PcrSeed       int64
-	SamplingSeed  int64
-	RawParamsFile string
-	RawGcEffs     []float64
-	RawLenProbs   *LenProbStruct
-	MinRawGcEff   float64
-	ExprMul       float64
+	ReqFrags       int64
+	NrCycles       int64
+	StrandBias     float64
+	PrimingTemp    float64
+	PrimingRejects bool
+	FixedEff       float64
+	GcEffParam     *EffParam
+	LenEffParam    *EffParam
+	ReportFile     string
+	Verbose        bool
+	TargetMix      *TargetMix
+	FragMethod     *FragMethod
+	FragLossProb   float64
+	InputFiles     []string
+	MaxProcs       int64
+	ProfFile       string
+	KmerLength     uint32
+	GobDir         string
+	GCFreq         int
+	PolyAParam     *TargetMix
+	InitSeed       int64
+	PcrSeed        int64
+	SamplingSeed   int64
+	RawParamsFile  string
+	RawGcEffs      []float64
+	RawLenProbs    *LenProbStruct
+	MinRawGcEff    float64
+	ExprMul        float64
 }
 
 // Parse command line arguments using the flag package.
@@ -101,6 +102,7 @@ func (a *CmdArgs) Parse() {
 	flag.StringVar(&polyAParams, "a", polyA_mix_default, "Poly(A) tail length distribution.")
 	flag.Float64Var(&a.StrandBias, "b", 0.5, "Strand bias.")
 	flag.Float64Var(&a.PrimingTemp, "p", 5.0, "Priming bias parameter.")
+	flag.BoolVar(&a.PrimingRejects, "pr", false, "Priming bias affects number of fragments")
 	flag.IntVar(&kmerLenght, "k", 6, "Primer length.")
 	flag.Float64Var(&a.FixedEff, "e", 0.0, "Fixed per-cyle PCR efficiency.")
 	flag.StringVar(&gcEffParams, "eg", "", "GC efficiency parameters")
@@ -138,6 +140,9 @@ Optional arguments:
         -b      strand bias                 float   0.5
         -c      PCR cycles                  int     11
         -p      priming bias parameter      float   5.0
+        -pr     priming bias affects        bool    false
+                nuber of fragments from a
+                transcript
         -k      primer length               int     6
         -a      poly(A) tail size dist.     string  [check source]
         -flg    fragment loss probability   float   0.0

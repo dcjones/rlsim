@@ -34,7 +34,7 @@ import (
 )
 
 type Pooler interface {
-	InitTranscripts(input Inputer, tg Targeter, fg Fragmentor, tc Thermocycler, st FragStater, GCFreq int, polyAParam *TargetMix, exprMul float64, rand Rander, pcrRand Rander)
+	InitTranscripts(input Inputer, tg Targeter, fg Fragmentor, tc Thermocycler, st FragStater, GCFreq int, polyAParam *TargetMix, exprMul float64, rand Rander, pcrRand Rander, primingRejects bool)
 	AddTranscript(tr Transcripter)
 	GetGobDir() string
 	RegisterFragments(tr Transcripter, length uint32, count uint64)
@@ -80,7 +80,7 @@ func NewPool(gobDir string) *Pool {
 }
 
 // Initialize transcripts from input
-func (p Pool) InitTranscripts(input Inputer, tg Targeter, fg Fragmentor, tc Thermocycler, st FragStater, GCFreq int, polyAParam *TargetMix, exprMul float64, rand Rander, pcrRand Rander) {
+func (p Pool) InitTranscripts(input Inputer, tg Targeter, fg Fragmentor, tc Thermocycler, st FragStater, GCFreq int, polyAParam *TargetMix, exprMul float64, rand Rander, pcrRand Rander, primingRejects bool) {
 	_, polyAmax := getGlobalMinMax(polyAParam)
 	L.PrintfV("Poly(A) tail distribution components:")
 	for _, l := range StringToSlice(polyAParam.String()) {
@@ -106,7 +106,7 @@ func (p Pool) InitTranscripts(input Inputer, tg Targeter, fg Fragmentor, tc Ther
 			continue
 		}
 		// Fragment transcript:
-		tr.Fragment(tg, fg, polyAParam, int(polyAmax), st, rand) // uses initial seed
+		tr.Fragment(tg, fg, polyAParam, int(polyAmax), st, rand, primingRejects) // uses initial seed
 		// Flatten fragment table:
 		tr.Flatten()
 		// Amplify fragments:

@@ -111,10 +111,7 @@ func (fr FragAfterPrim) Fragment(tr Transcripter, bindProfs *BindingProfiles, po
 	}
 
 	// Sample the number of breakpoints:
-	nrBreaks := rand.Poisson(rate) - 1
-	if nrBreaks <= 0 {
-		nrBreaks = 1
-	}
+	nrBreaks := rand.Poisson(rate)
 
 	// 0 and polyAend are predefined breakpoints:
 	breaks := make(sort.IntSlice, nrBreaks+2)
@@ -129,7 +126,7 @@ func (fr FragAfterPrim) Fragment(tr Transcripter, bindProfs *BindingProfiles, po
 	breaks.Sort()
 	// Iterate over fragments:
 FRAG:
-	for i := 0; i < len(breaks)-2; i++ {
+	for i := 0; i < len(breaks)-1; i++ {
 		start := uint32(breaks[i])
 		end := uint32(breaks[i+1])
 		// filter out too short fragments:
